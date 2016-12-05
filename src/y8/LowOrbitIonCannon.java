@@ -19,7 +19,6 @@ public class LowOrbitIonCannon implements BattleshipsPlayer
     private int nextX;
     private int nextY;
     
-
     public LowOrbitIonCannon()
     {
     }
