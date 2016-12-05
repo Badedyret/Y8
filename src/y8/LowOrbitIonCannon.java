@@ -43,7 +43,7 @@ public class LowOrbitIonCannon implements BattleshipsPlayer
     @Override
     public void placeShips(Fleet fleet, Board board)
     {
-//        int[][] shipMap = new int[board.sizeX()][board.sizeY()];
+        int[][] shipMap = new int[board.sizeX()][board.sizeY()];
         sizeX = board.sizeX();
         sizeY = board.sizeY();
         for(int i = 0; i < fleet.getNumberOfShips(); ++i)
