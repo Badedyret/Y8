@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package y8;
 
 import battleship.interfaces.BattleshipsPlayer;
@@ -15,16 +11,16 @@ import java.util.Random;
  *
  * @author Tobias
  */
-public class SystematicShotPlayer implements BattleshipsPlayer
+public class LowOrbitIonCannon implements BattleshipsPlayer
 {
     private final static Random rnd = new Random();
     private int sizeX;
     private int sizeY;
-    
     private int nextX;
     private int nextY;
+    
 
-    public SystematicShotPlayer()
+    public LowOrbitIonCannon()
     {
     }
     
@@ -48,28 +44,27 @@ public class SystematicShotPlayer implements BattleshipsPlayer
     @Override
     public void placeShips(Fleet fleet, Board board)
     {
-        nextX = 0;
-        nextY = 0;
+//        int[][] shipMap = new int[board.sizeX()][board.sizeY()];
         sizeX = board.sizeX();
         sizeY = board.sizeY();
         for(int i = 0; i < fleet.getNumberOfShips(); ++i)
         {
-            Ship s = fleet.getShip(i);
+            Ship ship = fleet.getShip(i);
             boolean vertical = rnd.nextBoolean();
             Position pos;
             if(vertical)
             {
                 int x = rnd.nextInt(sizeX);
-                int y = rnd.nextInt(sizeY-(s.size()-1));
+                int y = rnd.nextInt(sizeY-(ship.size()-1));
                 pos = new Position(x, y);
             }
             else
             {
-                int x = rnd.nextInt(sizeX-(s.size()-1));
+                int x = rnd.nextInt(sizeX-(ship.size()-1));
                 int y = rnd.nextInt(sizeY);
                 pos = new Position(x, y);
             }
-            board.placeShip(pos, s, vertical);
+            board.placeShip(pos, ship, vertical);
         }
     }
     

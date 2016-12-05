@@ -21,25 +21,25 @@ public class Y8 implements PlayerFactory<BattleshipsPlayer>
     @Override
     public BattleshipsPlayer getNewInstance()
     {
-        return new SystematicShotPlayer();
+        return new LowOrbitIonCannon();
     }
 
     @Override
     public String getID()
     {
-        return "E2";
+        return "Y8";
     }
 
     @Override
     public String getName()
     {
-        return "Systematic shooter";
+        return "Low Orbit Ion Cannon";
     }
 
     @Override
     public String[] getAuthors()
     {
-        String[] res = {"Tobias Grundtvig"};
+        String[] res = {"Joes"};
         return res;
     }
     
