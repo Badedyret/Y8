@@ -9,7 +9,7 @@ import java.util.Random;
 
 /**
  *
- * @author Tobias
+ * @author Jens Hansen & dyrene fra gården
  */
 public class LowOrbitIonCannon implements BattleshipsPlayer
 {
@@ -21,6 +21,7 @@ public class LowOrbitIonCannon implements BattleshipsPlayer
     
     public LowOrbitIonCannon()
     {
+        
     }
     
     
