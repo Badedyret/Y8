@@ -1,9 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
 package y8;
 
 import battleship.interfaces.BattleshipsPlayer;
@@ -11,12 +5,13 @@ import tournament.player.PlayerFactory;
 
 /**
  *
- * @author Tobias Grundtvig
+ * @author Benjamin Rasmussen, Christian Barth, Marco Frydshou.
  */
 public class Y8 implements PlayerFactory<BattleshipsPlayer>
 {
-    public Y8(){}
-    
+    public Y8()
+    {
+    }
     
     @Override
     public BattleshipsPlayer getNewInstance()
@@ -39,7 +34,7 @@ public class Y8 implements PlayerFactory<BattleshipsPlayer>
     @Override
     public String[] getAuthors()
     {
-        String[] res = {"Joes"};
+        String[] res = {"Benjamin Rasmussen", "Christian Barth", "Marco Frydshou"};
         return res;
     }
     
