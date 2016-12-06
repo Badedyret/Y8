@@ -5,16 +5,23 @@ import battleship.interfaces.Fleet;
 import battleship.interfaces.Position;
 import battleship.interfaces.Board;
 import battleship.interfaces.Ship;
+import java.util.HashMap;
 import java.util.Random;
 
 /**
  *
  * @author Benjamin Rasmussen, Christian Barth, Marco Frydshou.
  */
-public class LowOrbitIonCannon implements BattleshipsPlayer {
+public class LowOrbitIonCannon implements BattleshipsPlayer
+{
 
     private final static Random rnd = new Random();
-    private boolean[][] ship2DArray;
+    private Position lastShot = new Position(0, 0);
+    private HashMap<Integer, Position> targetMap = new HashMap();
+    private boolean[][] shipPositions;
+    private boolean[][] shotPositions;
+    private boolean hit;
+    private int currentEnemyShips;
     private int sizeX;
     private int sizeY;
     private int nextX;
@@ -44,7 +51,6 @@ public class LowOrbitIonCannon implements BattleshipsPlayer {
     public void placeShips(Fleet fleet, Board board)
     {
         Position pos;
-        ship2DArray = new boolean[board.sizeX()][board.sizeY()];
         sizeX = board.sizeX();
         sizeY = board.sizeY();
         for (int i = 0; i < fleet.getNumberOfShips();)
@@ -52,8 +58,8 @@ public class LowOrbitIonCannon implements BattleshipsPlayer {
             Ship ship = fleet.getShip(i);
             boolean vertical = rnd.nextBoolean();
             pos = pickPosition(vertical, ship);
-            
-            if (checkShipPlacement(pos, vertical, ship.size()))
+
+            if (checkValidPlacement(pos, vertical, ship.size()))
             {
                 board.placeShip(pos, ship, vertical);
                 mapShips(pos, vertical, ship.size());
@@ -77,21 +83,25 @@ public class LowOrbitIonCannon implements BattleshipsPlayer {
         }
     }
 
-    private boolean checkShipPlacement(Position pos, boolean vertical, int shipSize)
+    private boolean checkValidPlacement(Position pos, boolean vertical, int shipSize)
     {
         if (vertical)
         {
             for (int i = pos.y; i < shipSize + pos.y; i++)
             {
-                if (ship2DArray[pos.x][i])
+                if (shipPositions[pos.x][i])
+                {
                     return false;
+                }
             }
         } else
         {
             for (int i = pos.x; i < shipSize + pos.x; i++)
             {
-                if (ship2DArray[i][pos.y])
+                if (shipPositions[i][pos.y])
+                {
                     return false;
+                }
             }
         }
         return true;
@@ -103,13 +113,13 @@ public class LowOrbitIonCannon implements BattleshipsPlayer {
         {
             for (int i = pos.y; i < shipSize + pos.y; i++)
             {
-                ship2DArray[pos.x][i] = true;
+                shipPositions[pos.x][i] = true;
             }
         } else
         {
             for (int i = pos.x; i < shipSize + pos.x; i++)
             {
-                ship2DArray[i][pos.y] = true;
+                shipPositions[i][pos.y] = true;
             }
         }
     }
@@ -142,17 +152,84 @@ public class LowOrbitIonCannon implements BattleshipsPlayer {
     @Override
     public Position getFireCoordinates(Fleet enemyShips)
     {
-        Position shot = new Position(nextX, nextY);
-        ++nextX;
-        if (nextX >= sizeX)
+        if (hit && targetMap.isEmpty())
         {
-            nextX = 0;
-            ++nextY;
-            if (nextY >= sizeY)
-            {
-                nextY = 0;
-            }
+            huntPattern();
         }
+        if (!targetMap.isEmpty())
+        {
+            
+        }
+
+        return randomShot();
+    }
+
+    private void huntPattern()
+    {
+        if (lastShot.x == 0 && lastShot.y == 0)
+        {
+            targetMap.put(1, new Position(lastShot.x, lastShot.y + 1));
+            targetMap.put(2, new Position(lastShot.x + 1, lastShot.y));
+            return;
+        }
+        if (lastShot.x == sizeX - 1 && lastShot.y == sizeY - 1)
+        {
+            targetMap.put(1, new Position(lastShot.x, lastShot.y - 1));
+            targetMap.put(2, new Position(lastShot.x - 1, lastShot.y));
+            return;
+        }
+        if (lastShot.x == 0 && lastShot.y == sizeY - 1)
+        {
+            targetMap.put(1, new Position(lastShot.x, lastShot.y - 1));
+            targetMap.put(2, new Position(lastShot.x + 1, lastShot.y));
+            return;
+        }
+        if (lastShot.x == sizeX - 1 && lastShot.y == 0)
+        {
+            targetMap.put(1, new Position(lastShot.x, lastShot.y + 1));
+            targetMap.put(2, new Position(lastShot.x + 1, lastShot.y));
+            return;
+        }
+        if (lastShot.x == sizeX - 1)
+        {
+            targetMap.put(1, new Position(lastShot.x, lastShot.y + 1));
+            targetMap.put(2, new Position(lastShot.x, lastShot.y - 1));
+            targetMap.put(3, new Position(lastShot.x - 1, lastShot.y));
+        }
+        if (lastShot.y == sizeY - 1)
+        {
+            targetMap.put(1, new Position(lastShot.x - 1, lastShot.y));
+            targetMap.put(2, new Position(lastShot.x + 1, lastShot.y));
+            targetMap.put(3, new Position(lastShot.x, lastShot.y - 1));
+        }
+        if (lastShot.x == 0)
+        {
+            targetMap.put(1, new Position(lastShot.x, lastShot.y + 1));
+            targetMap.put(2, new Position(lastShot.x, lastShot.y - 1));
+            targetMap.put(3, new Position(lastShot.x + 1, lastShot.y));
+        }
+        if (lastShot.y == 0)
+        {
+            targetMap.put(1, new Position(lastShot.x - 1, lastShot.y));
+            targetMap.put(2, new Position(lastShot.x + 1, lastShot.y));
+            targetMap.put(3, new Position(lastShot.x, lastShot.y + 1));
+        } else
+        {
+            targetMap.put(1, new Position(lastShot.x, lastShot.y + 1));
+            targetMap.put(2, new Position(lastShot.x, lastShot.y - 1));
+            targetMap.put(3, new Position(lastShot.x + 1, lastShot.y));
+            targetMap.put(4, new Position(lastShot.x - 1, lastShot.y));
+        }
+    }
+
+    private Position randomShot()
+    {
+        Position shot = new Position(rnd.nextInt(sizeX), rnd.nextInt(sizeY));
+        while (shotPositions[shot.x][shot.y])
+        {
+            shot = new Position(rnd.nextInt(sizeX), rnd.nextInt(sizeY));
+        }
+        shotPositions[shot.x][shot.y] = true;
         return shot;
     }
 
@@ -169,7 +246,7 @@ public class LowOrbitIonCannon implements BattleshipsPlayer {
     @Override
     public void hitFeedBack(boolean hit, Fleet enemyShips)
     {
-        // Do nothing
+        this.hit = hit;
     }
 
     /**
@@ -181,7 +258,11 @@ public class LowOrbitIonCannon implements BattleshipsPlayer {
     @Override
     public void startMatch(int rounds, Fleet ships, int sizeX, int sizeY)
     {
-        //Do nothing...
+        this.sizeX = sizeX;
+        this.sizeY = sizeY;
+        shipPositions = new boolean[sizeX][sizeY];
+        shotPositions = new boolean[sizeX][sizeY];
+        currentEnemyShips = ships.getNumberOfShips();
     }
 
     /**
