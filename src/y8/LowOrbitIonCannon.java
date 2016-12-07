@@ -20,7 +20,7 @@ public class LowOrbitIonCannon implements BattleshipsPlayer {
     private boolean[][] shipPositions;
     private boolean[][] shotPositions;
     private boolean hit;
-    private int shotsFired = 1;
+    private int shotsFired = 0;
     private int currentEnemyShips;
     private int sizeX;
     private int sizeY;
@@ -53,8 +53,7 @@ public class LowOrbitIonCannon implements BattleshipsPlayer {
             Ship ship = fleet.getShip(i);
             boolean vertical = rnd.nextBoolean();
             Position pos = pickPosition(vertical, ship);
-            
-            // Der er noget galt med checkValidPlacement når man kører den flere gange end en (SingleMatchVisualizer)
+
             while (checkValidPlacement(pos, vertical, ship.size()) == false)
             {
                 vertical = rnd.nextBoolean();
@@ -149,28 +148,32 @@ public class LowOrbitIonCannon implements BattleshipsPlayer {
     @Override
     public Position getFireCoordinates(Fleet enemyShips)
     {
-//        if (hit && targetMap.isEmpty())
-//        {
-//            huntPattern();
-//        }
-//        if (!targetMap.isEmpty())
-//        {
-//            if (shotsFired <= targetMap.size())
-//            {
-//                Position shot = targetMap.get(shotsFired);
-//                lastShot = shot;
-//                shotsFired++;
-//                return shot;
-//            } else
-//            {
-//                targetMap.clear();
-//                shotsFired = 1;
-//                hit = false;
-//            }
-//        }
-//
-//        return randomShot();
-        return lastShot;
+        if (hit && targetMap.isEmpty())
+        {
+            huntPattern();
+        }
+        if (shotsFired >= targetMap.size())
+        {
+            targetMap.clear();
+            shotsFired = 0;
+            hit = false;
+        }
+        if (!targetMap.isEmpty())
+        {
+            while (shotsFired < targetMap.size())
+            {
+                shotsFired++;
+                Position shot = targetMap.get(shotsFired);
+                if (!shotPositions[shot.x][shot.y])
+                {
+                    lastShot = shot;
+                    shotPositions[shot.x][shot.y] = true;
+                    return shot;
+                }
+            }
+        }
+
+        return randomShot();
     }
 
     private void huntPattern()
@@ -270,8 +273,6 @@ public class LowOrbitIonCannon implements BattleshipsPlayer {
     {
         this.sizeX = sizeX;
         this.sizeY = sizeY;
-        shipPositions = new boolean[sizeX][sizeY];
-        shotPositions = new boolean[sizeX][sizeY];
         currentEnemyShips = ships.getNumberOfShips();
     }
 
@@ -283,7 +284,8 @@ public class LowOrbitIonCannon implements BattleshipsPlayer {
     @Override
     public void startRound(int round)
     {
-        //Do nothing
+        shipPositions = new boolean[sizeX][sizeY];
+        shotPositions = new boolean[sizeX][sizeY];
     }
 
     /**
