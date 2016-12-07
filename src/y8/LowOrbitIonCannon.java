@@ -12,8 +12,7 @@ import java.util.Random;
  *
  * @author Benjamin Rasmussen, Christian Barth, Marco Frydshou.
  */
-public class LowOrbitIonCannon implements BattleshipsPlayer
-{
+public class LowOrbitIonCannon implements BattleshipsPlayer {
 
     private final static Random rnd = new Random();
     private Position lastShot = new Position(0, 0);
@@ -21,11 +20,10 @@ public class LowOrbitIonCannon implements BattleshipsPlayer
     private boolean[][] shipPositions;
     private boolean[][] shotPositions;
     private boolean hit;
+    private int shotsFired = 1;
     private int currentEnemyShips;
     private int sizeX;
     private int sizeY;
-    private int nextX;
-    private int nextY;
 
     public LowOrbitIonCannon()
     {
@@ -50,21 +48,20 @@ public class LowOrbitIonCannon implements BattleshipsPlayer
     @Override
     public void placeShips(Fleet fleet, Board board)
     {
-        Position pos;
-        sizeX = board.sizeX();
-        sizeY = board.sizeY();
-        for (int i = 0; i < fleet.getNumberOfShips();)
+        for (int i = 0; i < fleet.getNumberOfShips(); ++i)
         {
             Ship ship = fleet.getShip(i);
             boolean vertical = rnd.nextBoolean();
-            pos = pickPosition(vertical, ship);
-
-            if (checkValidPlacement(pos, vertical, ship.size()))
+            Position pos = pickPosition(vertical, ship);
+            
+            // Der er noget galt med checkValidPlacement når man kører den flere gange end en (SingleMatchVisualizer)
+            while (checkValidPlacement(pos, vertical, ship.size()) == false)
             {
-                board.placeShip(pos, ship, vertical);
-                mapShips(pos, vertical, ship.size());
-                i++;
+                vertical = rnd.nextBoolean();
+                pos = pickPosition(vertical, ship);
             }
+            board.placeShip(pos, ship, vertical);
+            mapShips(pos, vertical, ship.size());
         }
     }
 
@@ -152,16 +149,28 @@ public class LowOrbitIonCannon implements BattleshipsPlayer
     @Override
     public Position getFireCoordinates(Fleet enemyShips)
     {
-        if (hit && targetMap.isEmpty())
-        {
-            huntPattern();
-        }
-        if (!targetMap.isEmpty())
-        {
-            
-        }
-
-        return randomShot();
+//        if (hit && targetMap.isEmpty())
+//        {
+//            huntPattern();
+//        }
+//        if (!targetMap.isEmpty())
+//        {
+//            if (shotsFired <= targetMap.size())
+//            {
+//                Position shot = targetMap.get(shotsFired);
+//                lastShot = shot;
+//                shotsFired++;
+//                return shot;
+//            } else
+//            {
+//                targetMap.clear();
+//                shotsFired = 1;
+//                hit = false;
+//            }
+//        }
+//
+//        return randomShot();
+        return lastShot;
     }
 
     private void huntPattern()
@@ -230,6 +239,7 @@ public class LowOrbitIonCannon implements BattleshipsPlayer
             shot = new Position(rnd.nextInt(sizeX), rnd.nextInt(sizeY));
         }
         shotPositions[shot.x][shot.y] = true;
+        lastShot = shot;
         return shot;
     }
 
