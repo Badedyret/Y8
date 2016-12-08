@@ -181,6 +181,7 @@ public class LowOrbitIonCannon implements BattleshipsPlayer {
             }
         }
 
+        
         Position pos = shotManager();
         heatMap[pos.x][pos.y] = 0;
         lastShot = pos;
