@@ -70,6 +70,12 @@ public class LowOrbitIonCannon implements BattleshipsPlayer {
             }
             board.placeShip(pos, ship, vertical);
             mapShips(pos, vertical, ship.size());
+            
+            for(int j = shipPositions.length-1; j > 0; j--)
+            {
+            System.out.println(Arrays.toString(shipPositions[j]));
+            }
+            System.out.println(board);
         }
     }
 
@@ -119,12 +125,50 @@ public class LowOrbitIonCannon implements BattleshipsPlayer {
             for (int i = pos.y; i < shipSize + pos.y; i++)
             {
                 shipPositions[pos.x][i] = true;
+//                System.out.println("x:" + (pos.x) + " " + "y:" + i);
+                
+                if (pos.x+1 <= sizeX-1) {
+                shipPositions[pos.x+1][i] = true;
+//                System.out.println("x:" + (pos.x+1) + " " + "y:" + i);
+                }
+                
+                if (pos.x-1 >= 0) {
+                    shipPositions[pos.x-1][i] = true;
+//                    System.out.println("x:" + (pos.x-1) + " " + "y:" + i);
+                }  
+            }
+            if(pos.y-1 > 0)
+            {
+                shipPositions[pos.x][pos.y-1] = true;
+            }
+            if(pos.y+shipSize+1 < sizeY-1)
+            {
+                shipPositions[pos.x][pos.y+shipSize+1] = true;
             }
         } else
         {
             for (int i = pos.x; i < shipSize + pos.x; i++)
             {
                 shipPositions[i][pos.y] = true;
+//                System.out.println("x:" + i + " " + "y:" + (pos.y));
+                
+                if (pos.y+1 <= sizeY-1) {
+                shipPositions[i][pos.y+1] = true;
+//                System.out.println("x:" + i + " " + "y:" + (pos.y+1));
+                }
+                
+                if (pos.y-1 >= 0) {
+                    shipPositions[pos.y-1][i] = true;
+//                    System.out.println("x:" + i + " " + "y:" + (pos.y-1));
+                }
+            }
+            if(pos.x-1 > 0)
+            {
+                shipPositions[pos.x-1][pos.y] = true;
+            }
+            if(pos.x+shipSize+1 < sizeX-1)
+            {
+                shipPositions[pos.x+shipSize+1][pos.y] = true;
             }
         }
     }
