@@ -57,7 +57,7 @@ public class LowOrbitIonCannon implements BattleshipsPlayer {
     @Override
     public void placeShips(Fleet fleet, Board board)
     {
-        for (int i = 0; i < fleet.getNumberOfShips(); i++)
+        for (int i = 4; i >= 0; i--)
         {
             Ship ship = fleet.getShip(i);
             boolean vertical = rnd.nextBoolean();
@@ -73,10 +73,32 @@ public class LowOrbitIonCannon implements BattleshipsPlayer {
             
             for(int j = shipPositions.length-1; j > 0; j--)
             {
-            System.out.println(Arrays.toString(shipPositions[j]));
+//                System.out.println(Arrays.toString(shipPositions[j]));
+                System.out.println(getBoard2D(shipPositions));
             }
             System.out.println(board);
         }
+    }
+    
+    public String getBoard2D(boolean[][] sp) {
+        
+        String mappet = "";
+                
+        for (int i = 9; i >= 0; i--) 
+        {
+            for (int j = 0; j <= 9; j++) 
+            {
+                if (sp[i][j] == true) 
+                {
+                    mappet += sp[i][j] + " ";
+                }
+                else 
+                {
+                    mappet += " ";
+                }
+            }
+        }
+        return mappet;
     }
 
     private Position pickPosition(boolean vertical, Ship ship)
@@ -145,7 +167,8 @@ public class LowOrbitIonCannon implements BattleshipsPlayer {
             {
                 shipPositions[pos.x][pos.y+shipSize+1] = true;
             }
-        } else
+        } 
+        else
         {
             for (int i = pos.x; i < shipSize + pos.x; i++)
             {
