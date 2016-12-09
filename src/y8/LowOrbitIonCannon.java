@@ -94,7 +94,7 @@ public class LowOrbitIonCannon implements BattleshipsPlayer {
                 }
                 else 
                 {
-                    mappet += " ";
+                    mappet += "";
                 }
             }
         }
