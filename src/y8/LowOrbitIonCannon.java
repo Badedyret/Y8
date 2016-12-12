@@ -6,10 +6,8 @@ import battleship.interfaces.Position;
 import battleship.interfaces.Board;
 import battleship.interfaces.Ship;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Random;
 
 /**
@@ -21,6 +19,7 @@ public class LowOrbitIonCannon implements BattleshipsPlayer {
     private final static Random rnd = new Random();
     private Position lastShot = new Position(0, 0);
     private Position holdShot;
+    private Position[] holdPattern;
     private HashMap<Integer, Position> targetMap = new HashMap();
     private ArrayList<Position> targetList = new ArrayList();
     private boolean[][] shipPositions;
@@ -30,6 +29,7 @@ public class LowOrbitIonCannon implements BattleshipsPlayer {
     private boolean onHunt;
     private int shotAtTarget = 0;
     private int startEnemyShips;
+    private int compareEnemyShips;
     private int currentEnemyShips;
     private int sizeX;
     private int sizeY;
@@ -55,44 +55,38 @@ public class LowOrbitIonCannon implements BattleshipsPlayer {
      * @param board Board the board were the ships must be placed.
      */
     @Override
+    // Places the largest ship first //
     public void placeShips(Fleet fleet, Board board)
     {
-        for (int i = 4; i >= 0; i--)
+        for (int i = 0; i < fleet.getNumberOfShips(); i++)
         {
             Ship ship = fleet.getShip(i);
             boolean vertical = rnd.nextBoolean();
             Position pos = pickPosition(vertical, ship);
 
-            while (checkValidPlacement(pos, vertical, ship.size()) == false)
+            while (checkValidPlacement(pos, vertical, ship) == false)
             {
                 vertical = rnd.nextBoolean();
                 pos = pickPosition(vertical, ship);
             }
             board.placeShip(pos, ship, vertical);
             mapShips(pos, vertical, ship.size());
-            
-            for(int j = shipPositions.length-1; j > 0; j--)
-            {
-//                System.out.println(Arrays.toString(shipPositions[j]));
-                System.out.println(getBoard2D(shipPositions));
-            }
-            System.out.println(board);
         }
+//        System.out.println(board);
     }
-    
-    public String getBoard2D(boolean[][] sp) {
-        
+
+    public String getBoard2D(boolean[][] sp)
+    {
         String mappet = "";
-                
-        for (int i = 9; i >= 0; i--) 
+
+        for (int i = 9; i >= 0; i--)
         {
-            for (int j = 0; j <= 9; j++) 
+            for (int j = 0; j <= 9; j++)
             {
-                if (sp[i][j] == true) 
+                if (sp[i][j] == true)
                 {
                     mappet += sp[i][j] + " ";
-                }
-                else 
+                } else
                 {
                     mappet += "";
                 }
@@ -116,11 +110,11 @@ public class LowOrbitIonCannon implements BattleshipsPlayer {
         }
     }
 
-    private boolean checkValidPlacement(Position pos, boolean vertical, int shipSize)
+    private boolean checkValidPlacement(Position pos, boolean vertical, Ship ship)
     {
         if (vertical)
         {
-            for (int i = pos.y; i < shipSize + pos.y; i++)
+            for (int i = pos.y; i < ship.size() + pos.y; i++)
             {
                 if (shipPositions[pos.x][i])
                 {
@@ -129,7 +123,7 @@ public class LowOrbitIonCannon implements BattleshipsPlayer {
             }
         } else
         {
-            for (int i = pos.x; i < shipSize + pos.x; i++)
+            for (int i = pos.x; i < ship.size() + pos.x; i++)
             {
                 if (shipPositions[i][pos.y])
                 {
@@ -147,51 +141,12 @@ public class LowOrbitIonCannon implements BattleshipsPlayer {
             for (int i = pos.y; i < shipSize + pos.y; i++)
             {
                 shipPositions[pos.x][i] = true;
-//                System.out.println("x:" + (pos.x) + " " + "y:" + i);
-                
-                if (pos.x+1 <= sizeX-1) {
-                shipPositions[pos.x+1][i] = true;
-//                System.out.println("x:" + (pos.x+1) + " " + "y:" + i);
-                }
-                
-                if (pos.x-1 >= 0) {
-                    shipPositions[pos.x-1][i] = true;
-//                    System.out.println("x:" + (pos.x-1) + " " + "y:" + i);
-                }  
             }
-            if(pos.y-1 > 0)
-            {
-                shipPositions[pos.x][pos.y-1] = true;
-            }
-            if(pos.y+shipSize+1 < sizeY-1)
-            {
-                shipPositions[pos.x][pos.y+shipSize+1] = true;
-            }
-        } 
-        else
+        } else
         {
             for (int i = pos.x; i < shipSize + pos.x; i++)
             {
                 shipPositions[i][pos.y] = true;
-//                System.out.println("x:" + i + " " + "y:" + (pos.y));
-                
-                if (pos.y+1 <= sizeY-1) {
-                shipPositions[i][pos.y+1] = true;
-//                System.out.println("x:" + i + " " + "y:" + (pos.y+1));
-                }
-                
-                if (pos.y-1 >= 0) {
-                    shipPositions[pos.y-1][i] = true;
-//                    System.out.println("x:" + i + " " + "y:" + (pos.y-1));
-                }
-            }
-            if(pos.x-1 > 0)
-            {
-                shipPositions[pos.x-1][pos.y] = true;
-            }
-            if(pos.x+shipSize+1 < sizeX-1)
-            {
-                shipPositions[pos.x+shipSize+1][pos.y] = true;
             }
         }
     }
@@ -207,7 +162,6 @@ public class LowOrbitIonCannon implements BattleshipsPlayer {
     @Override
     public void incoming(Position pos)
     {
-        //Do nothing
     }
 
     /**
@@ -223,39 +177,39 @@ public class LowOrbitIonCannon implements BattleshipsPlayer {
     @Override
     public Position getFireCoordinates(Fleet enemyShips)
     {
-        if (hit && targetMap.isEmpty())
-        {
-            huntPatternOLD();
-        }
-        if (shotAtTarget >= targetMap.size())
-        {
-            targetMap.clear();
-            shotAtTarget = 0;
-            hit = false;
-        }
-        if (!targetMap.isEmpty())
-        {
-            while (shotAtTarget < targetMap.size())
-            {
-                shotAtTarget++;
-                Position shot = targetMap.get(shotAtTarget);
-                if (!shotPositions[shot.x][shot.y])
-                {
-                    lastShot = shot;
-                    shotPositions[shot.x][shot.y] = true;
-                    return shot;
-                }
-            }
-        }
-
-        
-        Position pos = shotManager();
-        heatMap[pos.x][pos.y] = 0;
-        lastShot = pos;
-        shotPositions[pos.x][pos.y] = true;
-        return pos;
+//        if (hit && targetMap.isEmpty())
+//        {
+//            huntPatternOLD();
+//        }
+//        if (shotAtTarget >= targetMap.size())
+//        {
+//            targetMap.clear();
+//            shotAtTarget = 0;
+//            hit = false;
+//        }
+//        if (!targetMap.isEmpty())
+//        {
+//            while (shotAtTarget < targetMap.size())
+//            {
+//                shotAtTarget++;
+//                Position shot = targetMap.get(shotAtTarget);
+//                if (!shotPositions[shot.x][shot.y])
+//                {
+//                    lastShot = shot;
+//                    shotPositions[shot.x][shot.y] = true;
+//                    return shot;
+//                }
+//            }
+//        }
+//        Position pos = shotManager();
+//        heatMap[pos.x][pos.y] = 0;
+//        lastShot = pos;
+//        shotPositions[pos.x][pos.y] = true;
+//        return pos;
+        return shotManager();
     }
 
+    // Fix iterate for maxHeat //
     private Position shotManager()
     {
         targetList.clear();
@@ -268,7 +222,7 @@ public class LowOrbitIonCannon implements BattleshipsPlayer {
                     maxHeat = heatMap1[i];
             }
         }
-        
+
         for (int i = 0; i < heatMap.length; i++)
         {
             for (int j = 0; j < heatMap.length; j++)
@@ -278,6 +232,7 @@ public class LowOrbitIonCannon implements BattleshipsPlayer {
             }
         }
         Collections.shuffle(targetList);
+        lastShot = targetList.get(0);
         return targetList.get(0);
     }
 
@@ -285,99 +240,61 @@ public class LowOrbitIonCannon implements BattleshipsPlayer {
     {
         heatMap[lastShot.x][lastShot.y] = 0;
 
-        if (hit && !onHunt)
+        // Workaround for ships wrecked before round start //
+        if (!hit && currentEnemyShips < compareEnemyShips)
+            compareEnemyShips = currentEnemyShips;
+
+        if (currentEnemyShips < compareEnemyShips)
         {
             hit = false;
-            onHunt = true;
-            holdShot = lastShot;
-            applyHeat(huntPattern(), 3);
+            onHunt = false;
+            applyHeat(holdPattern, 1);
+            compareEnemyShips = currentEnemyShips;
         }
-    }
 
-    private Position[] huntPattern()
-    {
-        if (lastShot.x == 0 && lastShot.y == 0)
+        if (hit && !onHunt)
         {
-            Position[] posArray =
-            {
-                new Position(1, 0), new Position(0, 1)
-            };
-            return posArray;
+            onHunt = true;
+            holdPattern = huntPattern(lastShot);
+            applyHeat(holdPattern, 3);
         }
-        if (lastShot.x == sizeX - 1 && lastShot.y == sizeY - 1)
+
+        /* Increases heat in a direction to lastShot, reduces heat around
+           the shot that initialized the hunt (holdShot) */
+        if (hit && onHunt)
         {
-            Position[] posArray =
+            int incrementX = (int) Math.signum(lastShot.x - holdShot.x);
+            int incrementY = (int) Math.signum(lastShot.y - holdShot.x);
+            System.out.println(incrementX + ", " + incrementY);
+
+            if (incrementX != 0)
             {
-                new Position(sizeX - 2, sizeY - 1),
-                new Position(sizeX - 1, sizeY - 2)
-            };
-            return posArray;
-        }
-        if (lastShot.x == 0 && lastShot.y == sizeY - 1)
-        {
-            Position[] posArray =
+                // Needs to be optimised to not do everytime // 
+                Position[] reduceHeat =
+                {
+                    new Position(holdShot.x, holdShot.y + 1),
+                    new Position(holdShot.x, holdShot.y - 1)
+                };
+                Position[] increaseHeat =
+                {
+                    new Position(lastShot.x + incrementX, lastShot.y)
+                };
+                applyHeat(reduceHeat, 1);
+                applyHeat(increaseHeat, 4);
+            } else
             {
-                new Position(1, sizeY - 1), new Position(0, sizeY - 2)
-            };
-            return posArray;
-        }
-        if (lastShot.x == sizeX - 1 && lastShot.y == 0)
-        {
-            Position[] posArray =
-            {
-                new Position(sizeX - 1, 1), new Position(sizeX - 2, 0)
-            };
-            return posArray;
-        }
-        if (lastShot.x == sizeX - 1)
-        {
-            Position[] posArray =
-            {
-                new Position(lastShot.x, lastShot.y + 1),
-                new Position(lastShot.x, lastShot.y - 1),
-                new Position(lastShot.x - 1, lastShot.y)
-            };
-            return posArray;
-        }
-        if (lastShot.y == sizeY - 1)
-        {
-            Position[] posArray =
-            {
-                new Position(lastShot.x - 1, lastShot.y),
-                new Position(lastShot.x + 1, lastShot.y),
-                new Position(lastShot.x, lastShot.y - 1)
-            };
-            return posArray;
-        }
-        if (lastShot.x == 0)
-        {
-            Position[] posArray =
-            {
-                new Position(lastShot.x, lastShot.y - 1),
-                new Position(lastShot.x, lastShot.y + 1),
-                new Position(lastShot.x + 1, lastShot.y)
-            };
-            return posArray;
-        }
-        if (lastShot.y == 0)
-        {
-            Position[] posArray =
-            {
-                new Position(lastShot.x - 1, lastShot.y),
-                new Position(lastShot.x + 1, lastShot.y),
-                new Position(lastShot.x, lastShot.y + 1)
-            };
-            return posArray;
-        } else
-        {
-            Position[] posArray =
-            {
-                new Position(lastShot.x + 1, lastShot.y),
-                new Position(lastShot.x - 1, lastShot.y),
-                new Position(lastShot.x, lastShot.y + 1),
-                new Position(lastShot.x, lastShot.y - 1)
-            };
-            return posArray;
+                Position[] reduceHeat =
+                {
+                    new Position(holdShot.x + 1, holdShot.y),
+                    new Position(holdShot.x - 1, holdShot.y)
+                };
+                Position[] increaseHeat =
+                {
+                    new Position(lastShot.x, lastShot.y + incrementY)
+                };
+                applyHeat(reduceHeat, 1);
+                applyHeat(increaseHeat, 4);
+            }
         }
     }
 
@@ -385,8 +302,75 @@ public class LowOrbitIonCannon implements BattleshipsPlayer {
     {
         for (Position pos : posArr)
         {
-            if (heatMap[pos.x][pos.y] != 0)
+            if (pos != null && heatMap[pos.x][pos.y] != 0)
                 heatMap[pos.x][pos.y] = heat;
+        }
+    }
+
+    // Returns tiles linear adjacent to the hit //
+    private Position[] huntPattern(Position lastShot)
+    {
+        // In order: Up, Down, Left, Right //
+        Position[] posArray = new Position[4];
+        if (lastShot.x == 0 && lastShot.y == 0)
+        {
+            posArray[0] = new Position(0, 1);
+            posArray[3] = new Position(1, 0);
+            return posArray;
+        }
+        if (lastShot.x == sizeX - 1 && lastShot.y == sizeY - 1)
+        {
+            posArray[1] = new Position(sizeX - 1, sizeY - 2);
+            posArray[2] = new Position(sizeX - 2, sizeY - 1);
+            return posArray;
+        }
+        if (lastShot.x == 0 && lastShot.y == sizeY - 1)
+        {
+
+            posArray[1] = new Position(0, sizeY - 2);
+            posArray[3] = new Position(1, sizeY - 1);
+            return posArray;
+        }
+        if (lastShot.x == sizeX - 1 && lastShot.y == 0)
+        {
+            posArray[0] = new Position(sizeX - 1, 1);
+            posArray[2] = new Position(sizeX - 2, 0);
+            return posArray;
+        }
+        if (lastShot.x == sizeX - 1)
+        {
+            posArray[0] = new Position(lastShot.x, lastShot.y + 1);
+            posArray[1] = new Position(lastShot.x, lastShot.y - 1);
+            posArray[2] = new Position(lastShot.x - 1, lastShot.y);
+            return posArray;
+        }
+        if (lastShot.y == sizeY - 1)
+        {
+            posArray[1] = new Position(lastShot.x, lastShot.y - 1);
+            posArray[2] = new Position(lastShot.x - 1, lastShot.y);
+            posArray[3] = new Position(lastShot.x + 1, lastShot.y);
+            return posArray;
+        }
+        if (lastShot.x == 0)
+        {
+            posArray[0] = new Position(lastShot.x, lastShot.y + 1);
+            posArray[1] = new Position(lastShot.x, lastShot.y - 1);
+            posArray[3] = new Position(lastShot.x + 1, lastShot.y);
+            return posArray;
+        }
+        if (lastShot.y == 0)
+        {
+            posArray[0] = new Position(lastShot.x, lastShot.y + 1);
+            posArray[2] = new Position(lastShot.x - 1, lastShot.y);
+            posArray[3] = new Position(lastShot.x + 1, lastShot.y);
+            return posArray;
+        } else
+        {
+            posArray[0] = new Position(lastShot.x, lastShot.y + 1);
+            posArray[1] = new Position(lastShot.x, lastShot.y - 1);
+            posArray[2] = new Position(lastShot.x - 1, lastShot.y);
+            posArray[3] = new Position(lastShot.x + 1, lastShot.y);
+            return posArray;
         }
     }
 
@@ -451,18 +435,6 @@ public class LowOrbitIonCannon implements BattleshipsPlayer {
         }
     }
 
-    private Position randomShot()
-    {
-        Position shot = new Position(rnd.nextInt(sizeX), rnd.nextInt(sizeY));
-        while (shotPositions[shot.x][shot.y])
-        {
-            shot = new Position(rnd.nextInt(sizeX), rnd.nextInt(sizeY));
-        }
-        shotPositions[shot.x][shot.y] = true;
-        lastShot = shot;
-        return shot;
-    }
-
     /**
      * Called right after getFireCoordinates(...) to let your AI know if you hit
      * something or not.
@@ -477,6 +449,9 @@ public class LowOrbitIonCannon implements BattleshipsPlayer {
     public void hitFeedBack(boolean hit, Fleet enemyShips)
     {
         this.hit = hit;
+        currentEnemyShips = enemyShips.getNumberOfShips();
+        heatManager();
+        this.printHeatmap();
     }
 
     /**
@@ -504,6 +479,7 @@ public class LowOrbitIonCannon implements BattleshipsPlayer {
         heatMap = new int[sizeX][sizeY];
         shipPositions = new boolean[sizeX][sizeY];
         shotPositions = new boolean[sizeX][sizeY];
+        compareEnemyShips = startEnemyShips;
         currentEnemyShips = startEnemyShips;
         resetHeatmap();
 //        this.printHeatmap();
@@ -532,11 +508,11 @@ public class LowOrbitIonCannon implements BattleshipsPlayer {
     private void printHeatmap()
     {
         System.out.println("#####################################################");
-        for (int i = 0; i < heatMap.length; i++)
+        for (int i = heatMap.length - 1; i >= 0; i--)
         {
             for (int j = 0; j < heatMap.length; j++)
             {
-                System.out.print("[" + heatMap[i][j] + "]");
+                System.out.print("[" + heatMap[j][i] + "]");
             }
             System.out.println("");
         }
