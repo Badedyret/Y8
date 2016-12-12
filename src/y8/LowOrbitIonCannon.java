@@ -61,7 +61,8 @@ public class LowOrbitIonCannon implements BattleshipsPlayer
     // Places the largest ship first //
     public void placeShips(Fleet fleet, Board board)
     {
-        for (int i = fleet.getNumberOfShips() - 1; i >= 0; i--)
+        board.placeShip(new Position(8,9), fleet.getShip(0), false);
+        for (int i = fleet.getNumberOfShips() - 1; i >= 1; i--)
         {
             Ship ship = fleet.getShip(i);
             boolean vertical = rnd.nextBoolean();
@@ -245,17 +246,17 @@ public class LowOrbitIonCannon implements BattleshipsPlayer
     {
         heatMap[lastShot.x][lastShot.y] = 0;
 
-        // Workaround for ships wrecked before round start //
-//        if (!hit && currentEnemyShips < compareEnemyShips)
-//            compareEnemyShips = currentEnemyShips;
-//
-//        if (currentEnemyShips < compareEnemyShips)
-//        {
-//            hit = false;
-//            onHunt = false;
-//            applyHeat(holdPattern, 1);
-//            compareEnemyShips = currentEnemyShips;
-//        }
+//        Workaround for ships wrecked before round start //
+        if (!hit && currentEnemyShips < compareEnemyShips)
+            compareEnemyShips = currentEnemyShips;
+
+        if (currentEnemyShips < compareEnemyShips)
+        {
+            hit = false;
+            onHunt = false;
+            applyHeat(holdPattern, 1);
+            compareEnemyShips = currentEnemyShips;
+        }
         if (hit && !onHunt)
         {
             System.out.println("HUNT STARTED");
