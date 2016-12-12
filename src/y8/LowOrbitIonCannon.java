@@ -243,7 +243,6 @@ public class LowOrbitIonCannon implements BattleshipsPlayer
 
     private void heatManager()
     {
-        System.out.println("ENTERED HEATMANAGER");
         heatMap[lastShot.x][lastShot.y] = 0;
 
         // Workaround for ships wrecked before round start //
@@ -257,10 +256,11 @@ public class LowOrbitIonCannon implements BattleshipsPlayer
 //            applyHeat(holdPattern, 1);
 //            compareEnemyShips = currentEnemyShips;
 //        }
-
         if (hit && !onHunt)
         {
+            System.out.println("HUNT STARTED");
             onHunt = true;
+            holdShot = lastShot;
             holdPattern = huntPattern(lastShot);
             applyHeat(holdPattern, 3);
         }
@@ -269,9 +269,9 @@ public class LowOrbitIonCannon implements BattleshipsPlayer
            the shot that initialized the hunt (holdShot) */
         if (hit && onHunt)
         {
-            System.out.println("BEFORE MATH SIGNUM");
+            System.out.println("HIT and ONHUNT");
             int incrementX = (int) Math.signum(lastShot.x - holdShot.x);
-            int incrementY = (int) Math.signum(lastShot.y - holdShot.x);
+            int incrementY = (int) Math.signum(lastShot.y - holdShot.y);
             System.out.println(incrementX + ", " + incrementY);
 
             if (incrementX != 0)

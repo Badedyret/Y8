@@ -71,6 +71,6 @@
 
     -->
 	<target name="-post-jar">
-        <copy file="${dist.jar}/" tofile="..\\AIjars\\${ant.project.name}.jar"/>
+        <copy file="${dist.jar}/" tofile="..\\..\\AIjars\\${ant.project.name}.jar"/>
     </target>
 </project>
