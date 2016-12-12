@@ -69,32 +69,13 @@ public class LowOrbitIonCannon implements BattleshipsPlayer {
                 vertical = rnd.nextBoolean();
                 pos = pickPosition(vertical, ship);
             }
+            
             board.placeShip(pos, ship, vertical);
             mapShips(pos, vertical, ship.size());
         }
 //        System.out.println(board);
     }
-
-    public String getBoard2D(boolean[][] sp)
-    {
-        String mappet = "";
-
-        for (int i = 9; i >= 0; i--)
-        {
-            for (int j = 0; j <= 9; j++)
-            {
-                if (sp[i][j] == true)
-                {
-                    mappet += sp[i][j] + " ";
-                } else
-                {
-                    mappet += "";
-                }
-            }
-        }
-        return mappet;
-    }
-
+    
     private Position pickPosition(boolean vertical, Ship ship)
     {
         if (vertical)
@@ -132,6 +113,20 @@ public class LowOrbitIonCannon implements BattleshipsPlayer {
             }
         }
         return true;
+    }
+    
+    private boolean checkShipSides(Position pos, boolean vertical, Ship ship) 
+    {
+       if (vertical) 
+       {
+           if ()
+       }
+       else 
+       {
+           
+       }
+        
+        return false;
     }
 
     private void mapShips(Position pos, boolean vertical, int shipSize)
@@ -261,7 +256,7 @@ public class LowOrbitIonCannon implements BattleshipsPlayer {
 
         /* Increases heat in a direction to lastShot, reduces heat around
            the shot that initialized the hunt (holdShot) */
-        if (hit && onHunt)
+        else if (hit && onHunt)
         {
             int incrementX = (int) Math.signum(lastShot.x - holdShot.x);
             int incrementY = (int) Math.signum(lastShot.y - holdShot.x);
