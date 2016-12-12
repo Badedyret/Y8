@@ -13,8 +13,7 @@ import java.util.Random;
  *
  * @author Benjamin Rasmussen, Christian Barth, Marco Frydshou.
  */
-public class LowOrbitIonCannon implements BattleshipsPlayer
-{
+public class LowOrbitIonCannon implements BattleshipsPlayer {
 
     private final static Random rnd = new Random();
     private Position lastShot = new Position(0, 0);
@@ -25,6 +24,7 @@ public class LowOrbitIonCannon implements BattleshipsPlayer
     private int[][] heatMap;
     private boolean hit;
     private boolean onHunt;
+    private boolean counteredWrecks;
     private int startEnemyShips;
     private int compareEnemyShips;
     private int currentEnemyShips;
@@ -55,8 +55,13 @@ public class LowOrbitIonCannon implements BattleshipsPlayer
     // Places the largest ship first //
     public void placeShips(Fleet fleet, Board board)
     {
-        board.placeShip(new Position(8,9), fleet.getShip(0), false);
-        for (int i = fleet.getNumberOfShips() - 1; i >= 1; i--)
+        this.oldPlaceShips(fleet, board);
+//        System.out.println(board);
+    }
+
+    private void oldPlaceShips(Fleet fleet, Board board)
+    {
+        for (int i = fleet.getNumberOfShips() - 1; i >= 0; i--)
         {
             Ship ship = fleet.getShip(i);
             boolean vertical = rnd.nextBoolean();
@@ -67,11 +72,10 @@ public class LowOrbitIonCannon implements BattleshipsPlayer
                 vertical = rnd.nextBoolean();
                 pos = pickPosition(vertical, ship);
             }
-            
+
             board.placeShip(pos, ship, vertical);
             mapShips(pos, vertical, ship.size());
         }
-//        System.out.println(board);
     }
 
     private Position pickPosition(boolean vertical, Ship ship)
@@ -112,7 +116,7 @@ public class LowOrbitIonCannon implements BattleshipsPlayer
         }
         return true;
     }
-    
+
 //    private boolean checkShipSides(Position pos, boolean vertical, Ship ship) 
 //    {
 //       if (vertical) 
@@ -129,7 +133,6 @@ public class LowOrbitIonCannon implements BattleshipsPlayer
 //        
 //        return false;
 //    }
-
     private void mapShips(Position pos, boolean vertical, int shipSize)
     {
         if (vertical)
@@ -176,7 +179,6 @@ public class LowOrbitIonCannon implements BattleshipsPlayer
         return shotManager();
     }
 
-    // Fix iterate for maxHeat //
     private Position shotManager()
     {
         targetList.clear();
@@ -211,10 +213,6 @@ public class LowOrbitIonCannon implements BattleshipsPlayer
     {
         heatMap[lastShot.x][lastShot.y] = 0;
 
-        // Workaround for ships wrecked before round start //
-        if (!hit && currentEnemyShips < compareEnemyShips)
-            compareEnemyShips = currentEnemyShips;
-
         if (currentEnemyShips < compareEnemyShips)
         {
             hit = false;
@@ -222,24 +220,13 @@ public class LowOrbitIonCannon implements BattleshipsPlayer
             applyHeat(holdPattern, 1);
             compareEnemyShips = currentEnemyShips;
         }
-        
-//        Workaround for ships wrecked before round start //
-        if (!hit && currentEnemyShips < compareEnemyShips)
-            compareEnemyShips = currentEnemyShips;
 
-        if (currentEnemyShips < compareEnemyShips)
-        {
-            hit = false;
-            onHunt = false;
-            applyHeat(holdPattern, 1);
-            compareEnemyShips = currentEnemyShips;
-        }
         if (hit && !onHunt)
         {
             onHunt = true;
             holdShot = lastShot;
             holdPattern = huntPattern(lastShot);
-            applyHeat(holdPattern, 3);
+            applyHeat(holdPattern, 4);
         }
 
         /* Increases heat in a direction to lastShot, reduces heat around
@@ -262,9 +249,8 @@ public class LowOrbitIonCannon implements BattleshipsPlayer
                     new Position(lastShot.x + incrementX, lastShot.y)
                 };
                 applyHeat(reduceHeat, 1);
-                applyHeat(increaseHeat, 4);
-            }
-            else if (incrementY != 0)
+                applyHeat(increaseHeat, 5);
+            } else if (incrementY != 0)
             {
                 Position[] reduceHeat =
                 {
@@ -276,7 +262,7 @@ public class LowOrbitIonCannon implements BattleshipsPlayer
                     new Position(lastShot.x, lastShot.y + incrementY)
                 };
                 applyHeat(reduceHeat, 1);
-                applyHeat(increaseHeat, 4);
+                applyHeat(increaseHeat, 5);
             }
         }
     }
@@ -432,6 +418,14 @@ public class LowOrbitIonCannon implements BattleshipsPlayer
                 heat = 1;
             }
         }
+        heatMap[3][6] = 3;
+        heatMap[5][6] = 3;
+        heatMap[4][5] = 3;
+        heatMap[6][5] = 3;
+        heatMap[3][4] = 3;
+        heatMap[5][4] = 3;
+        heatMap[4][3] = 3;
+        heatMap[6][3] = 3;
     }
 
     private void printHeatmap()
