@@ -13,7 +13,8 @@ import java.util.Random;
  *
  * @author Benjamin Rasmussen, Christian Barth, Marco Frydshou.
  */
-public class LowOrbitIonCannon implements BattleshipsPlayer {
+public class LowOrbitIonCannon implements BattleshipsPlayer
+{
 
     private final static Random rnd = new Random();
     private Position lastShot = new Position(0, 0);
@@ -62,11 +63,11 @@ public class LowOrbitIonCannon implements BattleshipsPlayer {
 
     private void plantTheSeeds(Fleet fleet, Board board)
     {
-        board.placeShip(new Position(8,9), fleet.getShip(0), false);
-        board.placeShip(new Position(0,7), fleet.getShip(1), true);
-        board.placeShip(new Position(6,1), fleet.getShip(2), false);
-        board.placeShip(new Position(3,6), fleet.getShip(3), false);
-        board.placeShip(new Position(1,0), fleet.getShip(4), true);
+        board.placeShip(new Position(8, 9), fleet.getShip(0), false);
+        board.placeShip(new Position(0, 7), fleet.getShip(1), true);
+        board.placeShip(new Position(6, 1), fleet.getShip(2), false);
+        board.placeShip(new Position(3, 6), fleet.getShip(3), false);
+        board.placeShip(new Position(1, 0), fleet.getShip(4), true);
     }
 
     private void oldPlaceShips(Fleet fleet, Board board)
@@ -206,6 +207,10 @@ public class LowOrbitIonCannon implements BattleshipsPlayer {
     {
         heatMap[lastShot.x][lastShot.y] = 0;
 
+        // Counter wrecked from start //
+        if (!hit && currentEnemyShips < compareEnemyShips)
+            compareEnemyShips = currentEnemyShips;
+        
         if (currentEnemyShips < compareEnemyShips)
         {
             hit = false;
@@ -231,30 +236,17 @@ public class LowOrbitIonCannon implements BattleshipsPlayer {
 
             if (incrementX != 0)
             {
-                // Needs to be optimised to not do everytime //
-                Position[] reduceHeat =
-                {
-                    holdPattern[0],
-                    holdPattern[1]
-                };
                 Position[] increaseHeat =
                 {
                     new Position(lastShot.x + incrementX, lastShot.y)
                 };
-                applyHeat(reduceHeat, 1);
                 applyHeat(increaseHeat, 5);
             } else if (incrementY != 0)
             {
-                Position[] reduceHeat =
-                {
-                    holdPattern[2],
-                    holdPattern[3]
-                };
                 Position[] increaseHeat =
                 {
                     new Position(lastShot.x, lastShot.y + incrementY)
                 };
-                applyHeat(reduceHeat, 1);
                 applyHeat(increaseHeat, 5);
             }
         }
@@ -276,6 +268,7 @@ public class LowOrbitIonCannon implements BattleshipsPlayer {
     {
         // In order: Up, Down, Left, Right //
         Position[] posArray = new Position[4];
+
         if (lastShot.x == 0 && lastShot.y == 0)
         {
             posArray[0] = new Position(0, 1);
