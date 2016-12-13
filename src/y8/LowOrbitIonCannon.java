@@ -21,10 +21,10 @@ public class LowOrbitIonCannon implements BattleshipsPlayer {
     private Position[] holdPattern;
     private ArrayList<Position> targetList = new ArrayList();
     private boolean[][] shipPositions;
+    private int[][] shipMap;
     private int[][] heatMap;
     private boolean hit;
     private boolean onHunt;
-    private boolean counteredWrecks;
     private int startEnemyShips;
     private int compareEnemyShips;
     private int currentEnemyShips;
@@ -55,8 +55,18 @@ public class LowOrbitIonCannon implements BattleshipsPlayer {
     // Places the largest ship first //
     public void placeShips(Fleet fleet, Board board)
     {
-        this.oldPlaceShips(fleet, board);
+        plantTheSeeds(fleet, board);
+//        this.oldPlaceShips(fleet, board);
 //        System.out.println(board);
+    }
+
+    private void plantTheSeeds(Fleet fleet, Board board)
+    {
+        board.placeShip(new Position(8,9), fleet.getShip(0), false);
+        board.placeShip(new Position(0,7), fleet.getShip(1), true);
+        board.placeShip(new Position(6,1), fleet.getShip(2), false);
+        board.placeShip(new Position(3,6), fleet.getShip(3), false);
+        board.placeShip(new Position(1,0), fleet.getShip(4), true);
     }
 
     private void oldPlaceShips(Fleet fleet, Board board)
@@ -72,7 +82,6 @@ public class LowOrbitIonCannon implements BattleshipsPlayer {
                 vertical = rnd.nextBoolean();
                 pos = pickPosition(vertical, ship);
             }
-
             board.placeShip(pos, ship, vertical);
             mapShips(pos, vertical, ship.size());
         }
@@ -117,22 +126,6 @@ public class LowOrbitIonCannon implements BattleshipsPlayer {
         return true;
     }
 
-//    private boolean checkShipSides(Position pos, boolean vertical, Ship ship) 
-//    {
-//       if (vertical) 
-//       {
-//           if () 
-//           {
-//               
-//           }
-//       }
-//       else 
-//       {
-//           
-//       }
-//        
-//        return false;
-//    }
     private void mapShips(Position pos, boolean vertical, int shipSize)
     {
         if (vertical)
@@ -376,6 +369,7 @@ public class LowOrbitIonCannon implements BattleshipsPlayer {
         this.sizeX = sizeX;
         this.sizeY = sizeY;
         heatMap = new int[sizeX][sizeY];
+        shipMap = new int[sizeX][sizeY];
         startEnemyShips = ships.getNumberOfShips();
     }
 
@@ -390,11 +384,23 @@ public class LowOrbitIonCannon implements BattleshipsPlayer {
         shipPositions = new boolean[sizeX][sizeY];
         compareEnemyShips = startEnemyShips;
         currentEnemyShips = startEnemyShips;
-        resetHeatmap();
+        resetHeatMap();
+        resetShipMap();
 //        this.printHeatmap();
     }
 
-    private void resetHeatmap()
+    private void resetShipMap()
+    {
+        for (int[] row : shipMap)
+        {
+            for (int i = 0; i < row.length; i++)
+            {
+                row[i] = 3;
+            }
+        }
+    }
+
+    private void resetHeatMap()
     {
         int heat = 1;
         for (int i = 0; i < heatMap.length; i++)
@@ -426,6 +432,20 @@ public class LowOrbitIonCannon implements BattleshipsPlayer {
         heatMap[5][4] = 3;
         heatMap[4][3] = 3;
         heatMap[6][3] = 3;
+    }
+
+    private void printShipMap()
+    {
+        System.out.println("#####################################################");
+        for (int i = shipMap.length - 1; i >= 0; i--)
+        {
+            for (int j = 0; j < shipMap.length; j++)
+            {
+                System.out.print("[" + shipMap[j][i] + "]");
+            }
+            System.out.println("");
+        }
+        System.out.println("####################################################");
     }
 
     private void printHeatmap()
