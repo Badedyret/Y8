@@ -20,9 +20,9 @@ public class LowOrbitIonCannon implements BattleshipsPlayer
     private Position lastShot = new Position(0, 0);
     private Position holdShot;
     private Position[] holdPattern;
+    private Position[][] position2DArr;
     private ArrayList<Position> targetList = new ArrayList();
     private boolean[][] shipPositions;
-    private int[][] shipMap;
     private int[][] heatMap;
     private boolean hit;
     private boolean onHunt;
@@ -209,8 +209,10 @@ public class LowOrbitIonCannon implements BattleshipsPlayer
 
         // Counter wrecked from start //
         if (!hit && currentEnemyShips < compareEnemyShips)
+        {
             compareEnemyShips = currentEnemyShips;
-        
+        }
+
         if (currentEnemyShips < compareEnemyShips)
         {
             hit = false;
@@ -269,66 +271,23 @@ public class LowOrbitIonCannon implements BattleshipsPlayer
         // In order: Up, Down, Left, Right //
         Position[] posArray = new Position[4];
 
-        if (lastShot.x == 0 && lastShot.y == 0)
+        for (int i = 0; i < posArray.length; i++)
         {
-            posArray[0] = new Position(0, 1);
-            posArray[3] = new Position(1, 0);
-            return posArray;
+            try
+            {
+                if (i == 0)
+                    posArray[i] = position2DArr[lastShot.x][lastShot.y + 1];
+                if (i == 1)
+                    posArray[i] = position2DArr[lastShot.x][lastShot.y - 1];
+                if (i == 2)
+                    posArray[i] = position2DArr[lastShot.x - 1][lastShot.y];
+                if (i == 3)
+                    posArray[i] = position2DArr[lastShot.x + 1][lastShot.y];
+            } catch (java.lang.ArrayIndexOutOfBoundsException ex)
+            {
+            }
         }
-        if (lastShot.x == sizeX - 1 && lastShot.y == sizeY - 1)
-        {
-            posArray[1] = new Position(sizeX - 1, sizeY - 2);
-            posArray[2] = new Position(sizeX - 2, sizeY - 1);
-            return posArray;
-        }
-        if (lastShot.x == 0 && lastShot.y == sizeY - 1)
-        {
-
-            posArray[1] = new Position(0, sizeY - 2);
-            posArray[3] = new Position(1, sizeY - 1);
-            return posArray;
-        }
-        if (lastShot.x == sizeX - 1 && lastShot.y == 0)
-        {
-            posArray[0] = new Position(sizeX - 1, 1);
-            posArray[2] = new Position(sizeX - 2, 0);
-            return posArray;
-        }
-        if (lastShot.x == sizeX - 1)
-        {
-            posArray[0] = new Position(lastShot.x, lastShot.y + 1);
-            posArray[1] = new Position(lastShot.x, lastShot.y - 1);
-            posArray[2] = new Position(lastShot.x - 1, lastShot.y);
-            return posArray;
-        }
-        if (lastShot.y == sizeY - 1)
-        {
-            posArray[1] = new Position(lastShot.x, lastShot.y - 1);
-            posArray[2] = new Position(lastShot.x - 1, lastShot.y);
-            posArray[3] = new Position(lastShot.x + 1, lastShot.y);
-            return posArray;
-        }
-        if (lastShot.x == 0)
-        {
-            posArray[0] = new Position(lastShot.x, lastShot.y + 1);
-            posArray[1] = new Position(lastShot.x, lastShot.y - 1);
-            posArray[3] = new Position(lastShot.x + 1, lastShot.y);
-            return posArray;
-        }
-        if (lastShot.y == 0)
-        {
-            posArray[0] = new Position(lastShot.x, lastShot.y + 1);
-            posArray[2] = new Position(lastShot.x - 1, lastShot.y);
-            posArray[3] = new Position(lastShot.x + 1, lastShot.y);
-            return posArray;
-        } else
-        {
-            posArray[0] = new Position(lastShot.x, lastShot.y + 1);
-            posArray[1] = new Position(lastShot.x, lastShot.y - 1);
-            posArray[2] = new Position(lastShot.x - 1, lastShot.y);
-            posArray[3] = new Position(lastShot.x + 1, lastShot.y);
-            return posArray;
-        }
+        return posArray;
     }
 
     /**
@@ -362,8 +321,15 @@ public class LowOrbitIonCannon implements BattleshipsPlayer
         this.sizeX = sizeX;
         this.sizeY = sizeY;
         heatMap = new int[sizeX][sizeY];
-        shipMap = new int[sizeX][sizeY];
         startEnemyShips = ships.getNumberOfShips();
+        position2DArr = new Position[sizeX][sizeY];
+        for (int x = 0; x < position2DArr.length; x++)
+        {
+            for (int y = 0; y < position2DArr.length; y++)
+            {
+                position2DArr[x][y] = new Position(x, y);
+            }
+        }
     }
 
     /**
@@ -378,19 +344,7 @@ public class LowOrbitIonCannon implements BattleshipsPlayer
         compareEnemyShips = startEnemyShips;
         currentEnemyShips = startEnemyShips;
         resetHeatMap();
-        resetShipMap();
 //        this.printHeatmap();
-    }
-
-    private void resetShipMap()
-    {
-        for (int[] row : shipMap)
-        {
-            for (int i = 0; i < row.length; i++)
-            {
-                row[i] = 3;
-            }
-        }
     }
 
     private void resetHeatMap()
@@ -425,20 +379,6 @@ public class LowOrbitIonCannon implements BattleshipsPlayer
         heatMap[5][4] = 3;
         heatMap[4][3] = 3;
         heatMap[6][3] = 3;
-    }
-
-    private void printShipMap()
-    {
-        System.out.println("#####################################################");
-        for (int i = shipMap.length - 1; i >= 0; i--)
-        {
-            for (int j = 0; j < shipMap.length; j++)
-            {
-                System.out.print("[" + shipMap[j][i] + "]");
-            }
-            System.out.println("");
-        }
-        System.out.println("####################################################");
     }
 
     private void printHeatmap()
