@@ -7,7 +7,6 @@ import battleship.interfaces.Board;
 import battleship.interfaces.Ship;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Random;
 
 /**
@@ -24,7 +23,6 @@ public class LowOrbitIonCannon implements BattleshipsPlayer {
     private ArrayList<Position> targetList = new ArrayList();
     private boolean[][] shipPositions;
     private int[][] heatMap;
-    private int[][] enemyHeatMap;
     private boolean hit;
     private boolean onHunt;
     private int startEnemyShips;
@@ -54,7 +52,6 @@ public class LowOrbitIonCannon implements BattleshipsPlayer {
      * @param board Board the board were the ships must be placed.
      */
     @Override
-    // Places the largest ship first //
     public void placeShips(Fleet fleet, Board board)
     {
         plantTheSeeds(fleet, board);
@@ -83,23 +80,40 @@ public class LowOrbitIonCannon implements BattleshipsPlayer {
 
             Collections.shuffle(possiblePlacement);
             board.placeShip(possiblePlacement.get(0), ship, vertical);
-            this.mapShips(possiblePlacement.get(0), vertical, ship.size());
+            mapShips(possiblePlacement.get(0), vertical, ship.size());
         }
     }
 
     private void mapShips(Position pos, boolean vertical, int shipSize)
     {
+        ArrayList<Position> mapPattern = new ArrayList();
+        for (Position holdAdjacent : huntPattern(pos))
+        {
+            if (holdAdjacent != null)
+                mapPattern.add(holdAdjacent);
+        }
+        mapPattern.add(pos);
         if (vertical)
         {
-            for (int i = pos.y; i < shipSize + pos.y; i++)
+            for (Position holdPos : mapPattern)
             {
-                shipPositions[pos.x][i] = true;
+                for (int i = holdPos.y; i < shipSize + holdPos.y; i++)
+                {
+                    if (i > sizeY - 1)
+                        break;
+                    shipPositions[holdPos.x][i] = true;
+                }
             }
         } else
         {
-            for (int i = pos.x; i < shipSize + pos.x; i++)
+            for (Position holdPos : mapPattern)
             {
-                shipPositions[i][pos.y] = true;
+                for (int i = holdPos.x; i < shipSize + holdPos.x; i++)
+                {
+                    if (i > sizeX - 1)
+                        break;
+                    shipPositions[i][holdPos.y] = true;
+                }
             }
         }
     }
@@ -132,7 +146,6 @@ public class LowOrbitIonCannon implements BattleshipsPlayer {
                 }
             }
         }
-
         return possiblePlacement;
     }
 
@@ -164,7 +177,6 @@ public class LowOrbitIonCannon implements BattleshipsPlayer {
                 }
             }
         }
-
         return possiblePlacement;
     }
 
@@ -179,7 +191,6 @@ public class LowOrbitIonCannon implements BattleshipsPlayer {
     @Override
     public void incoming(Position pos)
     {
-        enemyHeatMap[pos.x][pos.y] += 1;
     }
 
     /**
@@ -340,7 +351,6 @@ public class LowOrbitIonCannon implements BattleshipsPlayer {
         this.sizeX = sizeX;
         this.sizeY = sizeY;
         heatMap = new int[sizeX][sizeY];
-        enemyHeatMap = new int[sizeX][sizeY];
         startEnemyShips = ships.getNumberOfShips();
         position2DArr = new Position[sizeX][sizeY];
         for (int x = 0; x < position2DArr.length; x++)
