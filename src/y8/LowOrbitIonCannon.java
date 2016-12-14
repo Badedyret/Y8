@@ -7,6 +7,7 @@ import battleship.interfaces.Board;
 import battleship.interfaces.Ship;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Random;
 
 /**
@@ -24,6 +25,7 @@ public class LowOrbitIonCannon implements BattleshipsPlayer
     private ArrayList<Position> targetList = new ArrayList();
     private boolean[][] shipPositions;
     private int[][] heatMap;
+    private int[][] enemyHeatMap;
     private boolean hit;
     private boolean onHunt;
     private int startEnemyShips;
@@ -63,11 +65,18 @@ public class LowOrbitIonCannon implements BattleshipsPlayer
 
     private void plantTheSeeds(Fleet fleet, Board board)
     {
-        board.placeShip(new Position(8, 9), fleet.getShip(0), false);
-        board.placeShip(new Position(0, 7), fleet.getShip(1), true);
-        board.placeShip(new Position(6, 1), fleet.getShip(2), false);
-        board.placeShip(new Position(3, 6), fleet.getShip(3), false);
-        board.placeShip(new Position(1, 0), fleet.getShip(4), true);
+//        board.placeShip(new Position(8, 9), fleet.getShip(0), false);
+//        board.placeShip(new Position(0, 7), fleet.getShip(1), true);
+//        board.placeShip(new Position(6, 1), fleet.getShip(2), false);
+//        board.placeShip(new Position(3, 6), fleet.getShip(3), false);
+//        board.placeShip(new Position(1, 0), fleet.getShip(4), true);
+        ArrayList<Position> possiblePlacement = new ArrayList();
+        for (int i = 0; i < fleet.getNumberOfShips(); i++)
+        {
+            Ship ship = fleet.getShip(i);
+            possiblePlacement.clear();
+            
+        }
     }
 
     private void oldPlaceShips(Fleet fleet, Board board)
@@ -144,6 +153,68 @@ public class LowOrbitIonCannon implements BattleshipsPlayer
         }
     }
 
+    private ArrayList<Position> shipPlacementX(int shipSize)
+    {
+        int counter = 0;
+        Position holdPos = null;
+        ArrayList<Position> possiblePlacementX = new ArrayList();
+
+        for (int y = 0; y < shipPositions.length - 1; y++)
+        {
+            for (int x = 0; x < shipPositions.length - 1; x++)
+            {
+                if (holdPos == null)
+                    holdPos = new Position(x, y);
+                if (!shipPositions[x][y])
+                    counter++;
+                else
+                {
+                    counter = 0;
+                    holdPos = null;
+                }
+
+                if (counter == shipSize)
+                {
+                    possiblePlacementX.add(holdPos);
+                    holdPos = null;
+                }
+            }
+        }
+
+        return possiblePlacementX;
+    }
+    
+    private ArrayList<Position> shipPlacementY(int shipSize)
+    {
+        int counter = 0;
+        Position holdPos = null;
+        ArrayList<Position> possiblePlacementY = new ArrayList();
+
+        for (int x = 0; x < shipPositions.length - 1; x++)
+        {
+            for (int y = 0; y < shipPositions.length - 1; y++)
+            {
+                if (holdPos == null)
+                    holdPos = new Position(x, y);
+                if (!shipPositions[x][y])
+                    counter++;
+                else
+                {
+                    counter = 0;
+                    holdPos = null;
+                }
+
+                if (counter == shipSize)
+                {
+                    possiblePlacementY.add(holdPos);
+                    holdPos = null;
+                }
+            }
+        }
+
+        return possiblePlacementY;
+    }
+
     /**
      * Called every time the enemy has fired a shot.
      *
@@ -155,6 +226,7 @@ public class LowOrbitIonCannon implements BattleshipsPlayer
     @Override
     public void incoming(Position pos)
     {
+        enemyHeatMap[pos.x][pos.y] += 1;
     }
 
     /**
@@ -321,6 +393,7 @@ public class LowOrbitIonCannon implements BattleshipsPlayer
         this.sizeX = sizeX;
         this.sizeY = sizeY;
         heatMap = new int[sizeX][sizeY];
+        enemyHeatMap = new int[sizeX][sizeY];
         startEnemyShips = ships.getNumberOfShips();
         position2DArr = new Position[sizeX][sizeY];
         for (int x = 0; x < position2DArr.length; x++)
