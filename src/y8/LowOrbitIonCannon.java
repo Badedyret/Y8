@@ -14,8 +14,7 @@ import java.util.Random;
  *
  * @author Benjamin Rasmussen, Christian Barth, Marco Frydshou.
  */
-public class LowOrbitIonCannon implements BattleshipsPlayer
-{
+public class LowOrbitIonCannon implements BattleshipsPlayer {
 
     private final static Random rnd = new Random();
     private Position lastShot = new Position(0, 0);
@@ -73,67 +72,19 @@ public class LowOrbitIonCannon implements BattleshipsPlayer
         ArrayList<Position> possiblePlacement = new ArrayList();
         for (int i = 0; i < fleet.getNumberOfShips(); i++)
         {
-            Ship ship = fleet.getShip(i);
             possiblePlacement.clear();
-            
-        }
-    }
-
-    private void oldPlaceShips(Fleet fleet, Board board)
-    {
-        for (int i = fleet.getNumberOfShips() - 1; i >= 0; i--)
-        {
             Ship ship = fleet.getShip(i);
             boolean vertical = rnd.nextBoolean();
-            Position pos = pickPosition(vertical, ship);
 
-            while (checkValidPlacement(pos, vertical, ship) == false)
-            {
-                vertical = rnd.nextBoolean();
-                pos = pickPosition(vertical, ship);
-            }
-            board.placeShip(pos, ship, vertical);
-            mapShips(pos, vertical, ship.size());
-        }
-    }
+            if (vertical)
+                possiblePlacement = shipPlacementY(ship.size());
+            else
+                possiblePlacement = shipPlacementX(ship.size());
 
-    private Position pickPosition(boolean vertical, Ship ship)
-    {
-        if (vertical)
-        {
-            int x = rnd.nextInt(sizeX);
-            int y = rnd.nextInt(sizeY - (ship.size() - 1));
-            return new Position(x, y);
-        } else
-        {
-            int x = rnd.nextInt(sizeX - (ship.size() - 1));
-            int y = rnd.nextInt(sizeY);
-            return new Position(x, y);
+            Collections.shuffle(possiblePlacement);
+            board.placeShip(possiblePlacement.get(0), ship, vertical);
+            this.mapShips(possiblePlacement.get(0), vertical, ship.size());
         }
-    }
-
-    private boolean checkValidPlacement(Position pos, boolean vertical, Ship ship)
-    {
-        if (vertical)
-        {
-            for (int i = pos.y; i < ship.size() + pos.y; i++)
-            {
-                if (shipPositions[pos.x][i])
-                {
-                    return false;
-                }
-            }
-        } else
-        {
-            for (int i = pos.x; i < ship.size() + pos.x; i++)
-            {
-                if (shipPositions[i][pos.y])
-                {
-                    return false;
-                }
-            }
-        }
-        return true;
     }
 
     private void mapShips(Position pos, boolean vertical, int shipSize)
@@ -155,13 +106,15 @@ public class LowOrbitIonCannon implements BattleshipsPlayer
 
     private ArrayList<Position> shipPlacementX(int shipSize)
     {
-        int counter = 0;
-        Position holdPos = null;
-        ArrayList<Position> possiblePlacementX = new ArrayList();
+        int counter;
+        Position holdPos;
+        ArrayList<Position> possiblePlacement = new ArrayList();
 
-        for (int y = 0; y < shipPositions.length - 1; y++)
+        for (int y = 0; y < sizeY; y++)
         {
-            for (int x = 0; x < shipPositions.length - 1; x++)
+            counter = 0;
+            holdPos = null;
+            for (int x = 0; x < sizeX; x++)
             {
                 if (holdPos == null)
                     holdPos = new Position(x, y);
@@ -173,26 +126,27 @@ public class LowOrbitIonCannon implements BattleshipsPlayer
                     holdPos = null;
                 }
 
-                if (counter == shipSize)
+                if (counter >= shipSize)
                 {
-                    possiblePlacementX.add(holdPos);
-                    holdPos = null;
+                    possiblePlacement.add(new Position(holdPos.x + (counter - shipSize), holdPos.y));
                 }
             }
         }
 
-        return possiblePlacementX;
+        return possiblePlacement;
     }
-    
+
     private ArrayList<Position> shipPlacementY(int shipSize)
     {
-        int counter = 0;
-        Position holdPos = null;
-        ArrayList<Position> possiblePlacementY = new ArrayList();
+        int counter;
+        Position holdPos;
+        ArrayList<Position> possiblePlacement = new ArrayList();
 
-        for (int x = 0; x < shipPositions.length - 1; x++)
+        for (int x = 0; x < sizeY; x++)
         {
-            for (int y = 0; y < shipPositions.length - 1; y++)
+            counter = 0;
+            holdPos = null;
+            for (int y = 0; y < sizeX; y++)
             {
                 if (holdPos == null)
                     holdPos = new Position(x, y);
@@ -204,15 +158,14 @@ public class LowOrbitIonCannon implements BattleshipsPlayer
                     holdPos = null;
                 }
 
-                if (counter == shipSize)
+                if (counter >= shipSize)
                 {
-                    possiblePlacementY.add(holdPos);
-                    holdPos = null;
+                    possiblePlacement.add(new Position(holdPos.x, holdPos.y + (counter - shipSize)));
                 }
             }
         }
 
-        return possiblePlacementY;
+        return possiblePlacement;
     }
 
     /**
@@ -278,12 +231,6 @@ public class LowOrbitIonCannon implements BattleshipsPlayer
     private void heatManager()
     {
         heatMap[lastShot.x][lastShot.y] = 0;
-
-        // Counter wrecked from start //
-        if (!hit && currentEnemyShips < compareEnemyShips)
-        {
-            compareEnemyShips = currentEnemyShips;
-        }
 
         if (currentEnemyShips < compareEnemyShips)
         {
