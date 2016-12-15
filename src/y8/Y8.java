@@ -16,7 +16,7 @@ public class Y8 implements PlayerFactory<BattleshipsPlayer>
     @Override
     public BattleshipsPlayer getNewInstance()
     {
-        return new LowOrbitIonCannon();
+        return new LOIC();
     }
 
     @Override
