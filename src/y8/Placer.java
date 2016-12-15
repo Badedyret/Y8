@@ -17,7 +17,7 @@ public class Placer {
         board.placeShip(new Position(0, 7), fleet.getShip(1), true);
         board.placeShip(new Position(6, 1), fleet.getShip(2), false);
         board.placeShip(new Position(3, 6), fleet.getShip(3), false);
-        board.placeShip(new Position(1, 0), fleet.getShip(4), true);
+        board.placeShip(new Position(0, 1), fleet.getShip(4), true);
     }
 
     public void dynamicShipPlace(Fleet fleet, Board board)
@@ -136,7 +136,7 @@ public class Placer {
         return possiblePlacement;
     }
 
-    public void parameterReset()
+    public void resetParameter()
     {
         shipPositions = new boolean[LOIC.sizeX][LOIC.sizeY];
     }

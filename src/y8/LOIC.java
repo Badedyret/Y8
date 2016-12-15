@@ -4,7 +4,6 @@ import battleship.interfaces.BattleshipsPlayer;
 import battleship.interfaces.Fleet;
 import battleship.interfaces.Position;
 import battleship.interfaces.Board;
-import battleship.interfaces.Ship;
 import java.util.Random;
 
 /**
@@ -17,12 +16,11 @@ public class LOIC implements BattleshipsPlayer {
     public static Position[][] position2DArr;
     public static int sizeX;
     public static int sizeY;
-    private Shooter shooter = new Shooter();
-    private Placer placer = new Placer();
+    private final Shooter shooter = new Shooter();
+    private final Placer placer = new Placer();
     private int onePercentRounds;
     private int switchPlaceStrat = 0;
-    private int switchAttackStrat = 0;
-    private double enemyPointsStart;
+    private double pointsPlaceStrat1;
     private double enemyPointsGame;
 
     public LOIC()
@@ -101,16 +99,6 @@ public class LOIC implements BattleshipsPlayer {
         shooter.heatManager();
     }
 
-    private boolean enemyHasShip(Fleet enemyShips, int shipSize)
-    {
-        for (Ship ship : enemyShips)
-        {
-            if (ship.size() == shipSize)
-                return true;
-        }
-        return false;
-    }
-
     /**
      * Called in the beginning of each match to inform about the number of
      * rounds being played.
@@ -133,6 +121,10 @@ public class LOIC implements BattleshipsPlayer {
                 position2DArr[x][y] = new Position(x, y);
             }
         }
+        for (int i = 0; i < ships.getNumberOfShips(); i++)
+        {
+            shooter.enemyShipListTemplate.add(ships.getShip(i).size());
+        }
     }
 
     /**
@@ -143,8 +135,8 @@ public class LOIC implements BattleshipsPlayer {
     @Override
     public void startRound(int round)
     {
-        shooter.parameterReset();
-        placer.parameterReset();
+        shooter.resetParameter();
+        placer.resetParameter();
     }
 
     /**
@@ -161,14 +153,14 @@ public class LOIC implements BattleshipsPlayer {
     public void endRound(int round, int points, int enemyPoints)
     {
         if (round < onePercentRounds)
-            enemyPointsStart += enemyPoints;
+            pointsPlaceStrat1 += enemyPoints;
         enemyPointsGame += enemyPoints;
         checkSwitchStrat(round);
     }
 
     private void checkSwitchStrat(int round)
     {
-        if (switchPlaceStrat < 1 && round > onePercentRounds && enemyPointsGame / round > 1.2 * (enemyPointsStart / onePercentRounds))
+        if (switchPlaceStrat < 1 && round > onePercentRounds && enemyPointsGame / round > 1.2 * (pointsPlaceStrat1 / onePercentRounds))
             switchPlaceStrat = 1;
     }
 

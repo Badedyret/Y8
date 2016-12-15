@@ -1,9 +1,8 @@
 package y8;
 
 import battleship.interfaces.Position;
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
+import java.util.ArrayList;
 
 public class Shooter {
 
@@ -11,11 +10,13 @@ public class Shooter {
     public int startEnemyShips;
     private int compareEnemyShips;
     public int currentEnemyShips;
+    int resetCounter = 0;
     private Position lastShot = new Position(0, 0);
     private Position holdShot;
     private Position[] holdPattern;
     private ArrayList<Position> targetList = new ArrayList();
-    private HashMap<Integer, Boolean> enemyShipMap = new HashMap();
+    public ArrayList<Integer> enemyShipListTemplate = new ArrayList();
+    public ArrayList<Integer> enemyShipList = new ArrayList();
     public boolean hit;
     private boolean onHunt;
 
@@ -69,29 +70,70 @@ public class Shooter {
             applyHeat(holdPattern, 4);
         }
 
+        int incrementX = (int) Math.signum(lastShot.x - holdShot.x);
+        int incrementY = (int) Math.signum(lastShot.y - holdShot.y);
         /* Increases heat in a direction to lastShot, reduces heat around
            the shot that initialized the hunt (holdShot) */
         if (hit && onHunt)
         {
-            int incrementX = (int) Math.signum(lastShot.x - holdShot.x);
-            int incrementY = (int) Math.signum(lastShot.y - holdShot.y);
+            // Checks may not be necessary because of interface error-handling //
+            Position[] increaseHeat = new Position[1];
+            if (incrementX != 0 && huntPattern(lastShot)[2] != null && huntPattern(lastShot)[3] != null)
+            {
+                increaseHeat[0] = new Position(lastShot.x + incrementX, lastShot.y);
+            } else if (incrementY != 0 && huntPattern(lastShot)[0] != null && huntPattern(lastShot)[1] != null)
+            {
+                increaseHeat[0] = new Position(lastShot.x, lastShot.y + incrementY);
+            }
+            applyHeat(increaseHeat, 6);
+        }
 
+        if (!hit && onHunt)
+        {
+            Position[] backwardHeat = new Position[1];
             if (incrementX != 0)
             {
-                Position[] increaseHeat =
+                if (incrementX > 0 && holdPattern[2] != null)
                 {
-                    new Position(lastShot.x + incrementX, lastShot.y)
-                };
-                applyHeat(increaseHeat, 6);
+                    backwardHeat[0] = new Position(holdShot.x - 1, holdShot.y);
+                }
+                if (incrementX < 0 && holdPattern[3] != null)
+                {
+                    backwardHeat[0] = new Position(holdShot.x + 1, holdShot.y);
+                }
             } else if (incrementY != 0)
             {
-                Position[] increaseHeat =
+                if (incrementY > 0 && holdPattern[1] != null)
                 {
-                    new Position(lastShot.x, lastShot.y + incrementY)
-                };
-                applyHeat(increaseHeat, 6);
+                    backwardHeat[0] = new Position(holdShot.x, holdShot.y - 1);
+                }
+                if (incrementY < 0 && holdPattern[0] != null)
+                {
+                    backwardHeat[0] = new Position(holdShot.x, holdShot.y + 1);
+                }
             }
+            applyHeat(backwardHeat, 5);
         }
+    }
+
+    // Unused code //
+    private int probabillityChecker(int shotsTaken)
+    {
+        int keepGoing = 0;
+        int turnAround = 0;
+        for (Integer shipSize : enemyShipList)
+        {
+            if (shotsTaken < shipSize / 2)
+                keepGoing++;
+            if (shotsTaken >= shipSize / 2)
+                turnAround++;
+        }
+        if (keepGoing > turnAround)
+            return 1;
+        if (keepGoing < turnAround)
+            return -1;
+        else
+            return 0;
     }
 
     private void applyHeat(Position[] posArr, int heat)
@@ -130,8 +172,9 @@ public class Shooter {
         return posArray;
     }
 
-    public void parameterReset()
+    public void resetParameter()
     {
+        enemyShipList = enemyShipListTemplate;
         compareEnemyShips = startEnemyShips;
         currentEnemyShips = startEnemyShips;
         resetHeatMap();
@@ -155,14 +198,21 @@ public class Shooter {
             else
                 heat = 1;
         }
-        heatMap[3][6] = 3;
-        heatMap[5][6] = 3;
-        heatMap[4][5] = 3;
-        heatMap[6][5] = 3;
-        heatMap[3][4] = 3;
-        heatMap[5][4] = 3;
-        heatMap[4][3] = 3;
-        heatMap[6][3] = 3;
+        resetCounter++;
+
+        if (resetCounter <= 2)
+        {
+            heatMap[3][6] = 3;
+            heatMap[5][6] = 3;
+            heatMap[4][5] = 3;
+            heatMap[5][4] = 3;
+            heatMap[6][5] = 3;
+            heatMap[3][4] = 3;
+            heatMap[4][3] = 3;
+            heatMap[6][3] = 3;
+        }
+        if (resetCounter == 3)
+            resetCounter = 0;
     }
 
     private void printHeatmap()
